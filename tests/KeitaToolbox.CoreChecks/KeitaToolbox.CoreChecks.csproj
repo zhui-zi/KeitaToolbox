@@ -7,15 +7,15 @@
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\plugins\KeitaToolbox\AutomationPolicies.cs" Link="AutomationPolicies.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\AggroAvoidancePolicy.cs" Link="AggroAvoidancePolicy.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\AdvancedUtilityPolicy.cs" Link="AdvancedUtilityPolicy.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\BocchiBmrCleanupPolicy.cs" Link="BocchiBmrCleanupPolicy.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\DeferredScheduler.cs" Link="DeferredScheduler.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\AsyncOperationGate.cs" Link="AsyncOperationGate.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\Configuration.cs" Link="Configuration.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\OutOnALimbSearchPolicy.cs" Link="OutOnALimbSearchPolicy.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\AutoTreasureOpenPolicy.cs" Link="AutoTreasureOpenPolicy.cs" />
-    <Compile Include="..\..\plugins\KeitaToolbox\PluginSwitchingPolicy.cs" Link="PluginSwitchingPolicy.cs" />
+    <Compile Include="..\..\KeitaToolbox\AutomationPolicies.cs" Link="AutomationPolicies.cs" />
+    <Compile Include="..\..\KeitaToolbox\AggroAvoidancePolicy.cs" Link="AggroAvoidancePolicy.cs" />
+    <Compile Include="..\..\KeitaToolbox\AdvancedUtilityPolicy.cs" Link="AdvancedUtilityPolicy.cs" />
+    <Compile Include="..\..\KeitaToolbox\BocchiBmrCleanupPolicy.cs" Link="BocchiBmrCleanupPolicy.cs" />
+    <Compile Include="..\..\KeitaToolbox\DeferredScheduler.cs" Link="DeferredScheduler.cs" />
+    <Compile Include="..\..\KeitaToolbox\AsyncOperationGate.cs" Link="AsyncOperationGate.cs" />
+    <Compile Include="..\..\KeitaToolbox\Configuration.cs" Link="Configuration.cs" />
+    <Compile Include="..\..\KeitaToolbox\OutOnALimbSearchPolicy.cs" Link="OutOnALimbSearchPolicy.cs" />
+    <Compile Include="..\..\KeitaToolbox\AutoTreasureOpenPolicy.cs" Link="AutoTreasureOpenPolicy.cs" />
+    <Compile Include="..\..\KeitaToolbox\PluginSwitchingPolicy.cs" Link="PluginSwitchingPolicy.cs" />
   </ItemGroup>
 </Project>

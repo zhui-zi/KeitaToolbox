@@ -21,22 +21,19 @@ try
 {
     if (!$SkipRestore)
     {
-        & dotnet restore 'plugins\KeitaToolbox\KeitaToolbox.csproj'
+        & dotnet restore 'KeitaToolbox\KeitaToolbox.csproj'
         Assert-LastExitCode 'Plugin restore'
     }
 
-    & dotnet build 'plugins\KeitaToolbox\KeitaToolbox.csproj' `
+    & dotnet build 'KeitaToolbox\KeitaToolbox.csproj' `
         --configuration Release `
         --no-restore `
         --no-incremental
     Assert-LastExitCode 'Plugin build'
 
-    $project = [xml](Get-Content -LiteralPath 'plugins\KeitaToolbox\KeitaToolbox.csproj' -Raw)
+    $project = [xml](Get-Content -LiteralPath 'KeitaToolbox\KeitaToolbox.csproj' -Raw -Encoding utf8)
     $projectVersion = [string]$project.Project.PropertyGroup.Version
-    $repoManifest = Get-Content -LiteralPath 'pluginmaster.json' -Raw | ConvertFrom-Json
-    $repoVersion = [string]($repoManifest |
-        Where-Object InternalName -eq 'KeitaToolbox').AssemblyVersion
-    $buildDirectory = 'plugins\KeitaToolbox\bin\Release'
+    $buildDirectory = 'KeitaToolbox\bin\Release'
     $buildDll = Join-Path $buildDirectory 'KeitaToolbox.dll'
     $packagePath = Join-Path $buildDirectory 'KeitaToolbox\latest.zip'
     $dllVersion = [System.Reflection.AssemblyName]::GetAssemblyName(
@@ -86,11 +83,10 @@ try
     }
 
     $buildDllHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $buildDll).Hash
-    if ($projectVersion -ne $repoVersion -or
-        $projectVersion -ne $dllVersion -or
+    if ($projectVersion -ne $dllVersion -or
         $projectVersion -ne $packageVersion)
     {
-        throw "Release version mismatch: project=$projectVersion repo=$repoVersion DLL=$dllVersion package=$packageVersion."
+        throw "Release version mismatch: project=$projectVersion DLL=$dllVersion package=$packageVersion."
     }
     if ($buildDllHash -ne $packageDllHash)
     {
@@ -104,12 +100,12 @@ try
     Assert-LastExitCode 'Core tests'
 
     $architectureLimits = @{
-        'plugins\KeitaToolbox\Plugin.Settings.cs' = 400
-        'plugins\KeitaToolbox\OccultPotFeature.cs' = 5000
-        'plugins\KeitaToolbox\OccultPotFeature.AutoDig.cs' = 3500
-        'plugins\KeitaToolbox\OccultPotFeature.CofferHunt.cs' = 1000
-        'plugins\KeitaToolbox\OccultPotFeature.TrackerModels.cs' = 200
-        'plugins\KeitaToolbox\AsyncOperationGate.cs' = 100
+        'KeitaToolbox\Plugin.Settings.cs' = 400
+        'KeitaToolbox\OccultPotFeature.cs' = 5000
+        'KeitaToolbox\OccultPotFeature.AutoDig.cs' = 3500
+        'KeitaToolbox\OccultPotFeature.CofferHunt.cs' = 1000
+        'KeitaToolbox\OccultPotFeature.TrackerModels.cs' = 200
+        'KeitaToolbox\AsyncOperationGate.cs' = 100
     }
     foreach ($entry in $architectureLimits.GetEnumerator())
     {
@@ -122,15 +118,9 @@ try
 
     if (!$SkipNpmInstall)
     {
-        & npm.cmd ci --prefix 'workers\dalamud-unlock'
-        Assert-LastExitCode 'Unlock Worker install'
-
         & npm.cmd ci --prefix 'workers\keita-toolbox-stats'
         Assert-LastExitCode 'Stats Worker install'
     }
-
-    & npm.cmd run check --prefix 'workers\dalamud-unlock'
-    Assert-LastExitCode 'Unlock Worker checks'
 
     & npm.cmd run check --prefix 'workers\keita-toolbox-stats'
     Assert-LastExitCode 'Stats Worker checks'

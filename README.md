@@ -1,19 +1,16 @@
-# Dalamud Plugins
+# KeitaToolbox
 
-Subscription URL:
+KeitaToolbox is a Dalamud CN plugin providing duty, recruitment, movement, combat, Occult Crescent, and quality-of-life automation.
 
-`https://raw.githubusercontent.com/zhui-zi/DalamudPlugins/main/pluginmaster.json`
-
-## Plugins
-
-- **Keita Toolbox** - Provides AEAssist startup management, duty and recruitment automation, the full Occult Crescent Magic Pot Assistant, plugin and map gearset switching, trade protection, IME cleanup, portrait synchronization, local flight, sprint, and advanced movement and combat utilities.
-- **Mask of Kefka** - Provides a clean OBS output window without Dalamud overlays, with synchronized non-blocking frame sharing and a Simplified Chinese interface.
-
-Magic Pot automation uses DailyRoutines for travel and duty commands, BOCCHI for combat, and the existing AEAssist, vnavmesh, Lifestream, and EdgeTTS integrations.
+Magic Pot automation integrates with DailyRoutines, BOCCHI, AEAssist, vnavmesh, Lifestream, and EdgeTTS.
 
 ## Development
 
-Run `powershell -ExecutionPolicy Bypass -File .\scripts\verify.ps1` for the plugin build, core tests, unlock Worker checks, architecture limits, and diff validation. The plugin build requires a local Dalamud CN development runtime.
+Run `pwsh -NoProfile -File .\scripts\verify.ps1` for the Release build, core tests, stats Worker checks, architecture limits, and diff validation. The plugin build requires a local Dalamud CN development runtime.
+
+## Distribution
+
+Install through the [DalamudPlugins repository](https://github.com/zhui-zi/DalamudPlugins) using its existing subscription URL.
 
 ## License
 

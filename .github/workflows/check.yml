@@ -21,12 +21,12 @@ jobs:
       - shell: pwsh
         run: |
           $limits = @{
-            "plugins/KeitaToolbox/Plugin.Settings.cs" = 400
-            "plugins/KeitaToolbox/OccultPotFeature.cs" = 5000
-            "plugins/KeitaToolbox/OccultPotFeature.AutoDig.cs" = 3500
-            "plugins/KeitaToolbox/OccultPotFeature.CofferHunt.cs" = 1000
-            "plugins/KeitaToolbox/OccultPotFeature.TrackerModels.cs" = 200
-            "plugins/KeitaToolbox/AsyncOperationGate.cs" = 100
+            "KeitaToolbox/Plugin.Settings.cs" = 400
+            "KeitaToolbox/OccultPotFeature.cs" = 5000
+            "KeitaToolbox/OccultPotFeature.AutoDig.cs" = 3500
+            "KeitaToolbox/OccultPotFeature.CofferHunt.cs" = 1000
+            "KeitaToolbox/OccultPotFeature.TrackerModels.cs" = 200
+            "KeitaToolbox/AsyncOperationGate.cs" = 100
           }
           foreach ($entry in $limits.GetEnumerator()) {
             $lineCount = (Get-Content $entry.Key).Count
@@ -35,21 +35,6 @@ jobs:
             }
           }
       - run: git diff --check
-
-  unlock-worker:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: workers/dalamud-unlock
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: workers/dalamud-unlock/package-lock.json
-      - run: npm ci
-      - run: npm run check
 
   stats-worker:
     runs-on: ubuntu-latest
