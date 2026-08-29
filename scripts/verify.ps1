@@ -16,6 +16,7 @@ function Assert-LastExitCode([string]$Step)
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
+$statsWorkerPath = Join-Path 'workers' 'keita-toolbox-stats'
 $npmCommand = if (Get-Command npm.cmd -ErrorAction SilentlyContinue)
 {
     'npm.cmd'
@@ -126,11 +127,11 @@ try
 
     if (!$SkipNpmInstall)
     {
-        & $npmCommand ci --prefix 'workers\keita-toolbox-stats'
+        & $npmCommand ci --prefix $statsWorkerPath
         Assert-LastExitCode 'Stats Worker install'
     }
 
-    & $npmCommand run check --prefix 'workers\keita-toolbox-stats'
+    & $npmCommand run check --prefix $statsWorkerPath
     Assert-LastExitCode 'Stats Worker checks'
 
     & git diff --check
