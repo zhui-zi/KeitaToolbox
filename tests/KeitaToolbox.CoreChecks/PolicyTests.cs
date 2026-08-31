@@ -10,14 +10,24 @@ public sealed class PolicyTests
     [TestMethod]
     public void AutoTreasureOpenRequiresSafeDutyContext()
     {
+        // A multiplayer duty entered alone is a valid solo session.
         Assert.IsTrue(AutoTreasureOpenPolicy.IsReady(
-            true, true, true, 1, true, false, false, 1500, 1500));
+            true, true, true, true, true, false, false, 1500, 1500));
+        // Public multi-party instances such as Occult Crescent are not solo sessions.
         Assert.IsFalse(AutoTreasureOpenPolicy.IsReady(
-            true, true, true, 2, true, false, false, 1500, 1500));
+            true, true, true, false, true, false, false, 1500, 1500));
         Assert.IsFalse(AutoTreasureOpenPolicy.IsReady(
-            true, true, false, 2, true, true, false, 1500, 1500));
+            true, true, false, false, true, true, false, 1500, 1500));
         Assert.IsFalse(AutoTreasureOpenPolicy.IsReady(
-            true, true, false, 2, true, false, false, 1499, 1500));
+            true, true, false, false, true, false, false, 1499, 1500));
+    }
+
+    [TestMethod]
+    public void AutoTreasureOpenAllowsSoloEntryIntoMultiplayerDuty()
+    {
+        Assert.IsTrue(AutoTreasureOpenPolicy.IsSoloDutySession(1, 1));
+        Assert.IsFalse(AutoTreasureOpenPolicy.IsSoloDutySession(1, 2));
+        Assert.IsFalse(AutoTreasureOpenPolicy.IsSoloDutySession(72, 1));
     }
 
     [TestMethod]

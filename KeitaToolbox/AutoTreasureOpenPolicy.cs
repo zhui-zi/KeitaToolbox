@@ -6,7 +6,7 @@ internal static class AutoTreasureOpenPolicy
         bool enabled,
         bool boundByDuty,
         bool soloOnly,
-        int partyMemberCount,
+        bool isSoloDutySession,
         bool playerReady,
         bool inCombat,
         bool occupied,
@@ -14,9 +14,12 @@ internal static class AutoTreasureOpenPolicy
         int postCombatCooldownMs) =>
         enabled &&
         boundByDuty &&
-        (!soloOnly || partyMemberCount <= 1) &&
+        (!soloOnly || isSoloDutySession) &&
         playerReady &&
         !inCombat &&
         !occupied &&
         millisecondsSinceCombat >= postCombatCooldownMs;
+
+    internal static bool IsSoloDutySession(int partyCount, int currentPartyMemberCount) =>
+        partyCount == 1 && currentPartyMemberCount <= 1;
 }

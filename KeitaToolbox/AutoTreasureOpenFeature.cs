@@ -4,6 +4,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using OmenTools.Info.Game.Packets.Upstream;
 
@@ -119,12 +120,26 @@ internal sealed unsafe class AutoTreasureOpenFeature : IDisposable
             Plugin.Config.Features.AutoTreasureOpen,
             boundByDuty,
             Plugin.Config.Duty.TreasureOpenSoloModeOnly,
-            Plugin.PartyList.Length,
+            IsSoloDutySession(),
             Plugin.ClientState.IsLoggedIn && player is { IsDead: false },
             condition[ConditionFlag.InCombat],
             occupied,
             now - lastCombatAt,
             Math.Max(0, Plugin.Config.Duty.TreasureOpenPostCombatCooldownMs));
+    }
+
+    private static bool IsSoloDutySession()
+    {
+        var gameMain = GameMain.Instance();
+        var contentId = gameMain == null ? 0u : gameMain->CurrentContentFinderConditionId;
+        var sheet = Plugin.Data.GetExcelSheet<Lumina.Excel.Sheets.ContentFinderCondition>();
+        if (contentId == 0 || sheet == null || !sheet.TryGetRow(contentId, out var content))
+            return false;
+
+        var memberType = content.ContentMemberType.Value;
+        return AutoTreasureOpenPolicy.IsSoloDutySession(
+            memberType.PartyCount,
+            Plugin.PartyList.Length);
     }
 
     private void BeginOpen(TreasureCandidate candidate, long now)

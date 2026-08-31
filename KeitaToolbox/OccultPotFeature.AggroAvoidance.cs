@@ -23,17 +23,17 @@ internal sealed partial class OccultPotFeature
     private const float NorthHornAggroMaximumDistance = 120f;
     private const long NorthHornAggroReplanIntervalMS = 1_250;
     private const long NorthHornAggroStallTimeoutMS = 6_000;
-    private const long NorthHornAggroSuppressionMS = 30_000;
 
     private bool northHornAggroAvoidanceActive;
     private bool northHornAggroRouteAdjusted;
+    private bool northHornAggroRouteBlockedLogged;
     private bool northHornAggroUnavailableLogged;
     private Vector3 northHornAggroDestination;
     private Vector3 northHornAggroLastProgressPosition;
     private long northHornAggroNextUpdateAt;
     private long northHornAggroLastProgressAt;
-    private long northHornAggroSuppressedUntil;
     private List<Vector3>? northHornAggroFallbackPath;
+    private List<Vector3>? northHornAggroBlockedPath;
 
     private void BeginNorthHornAggroAvoidance(Vector3 destination)
     {
@@ -47,27 +47,29 @@ internal sealed partial class OccultPotFeature
 
         northHornAggroAvoidanceActive = true;
         northHornAggroRouteAdjusted = false;
+        northHornAggroRouteBlockedLogged = false;
         northHornAggroUnavailableLogged = false;
         northHornAggroDestination = destination;
         northHornAggroLastProgressPosition =
             DService.Instance().ObjectTable.LocalPlayer?.Position ?? destination;
         northHornAggroNextUpdateAt = Environment.TickCount64 + NorthHornAggroReplanIntervalMS;
         northHornAggroLastProgressAt = Environment.TickCount64;
-        northHornAggroSuppressedUntil = 0;
         northHornAggroFallbackPath = null;
+        northHornAggroBlockedPath = null;
     }
 
     private void StopNorthHornAggroAvoidance()
     {
         northHornAggroAvoidanceActive = false;
         northHornAggroRouteAdjusted = false;
+        northHornAggroRouteBlockedLogged = false;
         northHornAggroUnavailableLogged = false;
         northHornAggroDestination = Vector3.Zero;
         northHornAggroLastProgressPosition = Vector3.Zero;
         northHornAggroNextUpdateAt = 0;
         northHornAggroLastProgressAt = 0;
-        northHornAggroSuppressedUntil = 0;
         northHornAggroFallbackPath = null;
+        northHornAggroBlockedPath = null;
     }
 
     private void UpdateNorthHornAggroAvoidance()
@@ -86,6 +88,12 @@ internal sealed partial class OccultPotFeature
         }
 
         var now = Environment.TickCount64;
+        if (northHornAggroBlockedPath != null)
+        {
+            RetryBlockedNorthHornAggroRoute(localPlayer, now);
+            return;
+        }
+
         bool pathRunning;
         try
         {
@@ -112,12 +120,15 @@ internal sealed partial class OccultPotFeature
             }
             else if (now - northHornAggroLastProgressAt >= NorthHornAggroStallTimeoutMS)
             {
-                RestoreNorthHornAggroFallback(localPlayer.Position, now);
+                PauseNorthHornAggroRouteForRetry(
+                    northHornAggroFallbackPath,
+                    now,
+                    "Monster-avoidance route stalled; movement paused while a safe route is rebuilt");
                 return;
             }
         }
 
-        if (now < northHornAggroNextUpdateAt || now < northHornAggroSuppressedUntil)
+        if (now < northHornAggroNextUpdateAt)
             return;
         northHornAggroNextUpdateAt = now + NorthHornAggroReplanIntervalMS;
 
@@ -142,9 +153,10 @@ internal sealed partial class OccultPotFeature
                     ProjectNorthHornAggroWaypoint,
                     out var safePath))
             {
-                DService.Instance().Log.Warning(
-                    "[KeitaToolbox.MagicPot] No fully projected monster-avoidance route was available; keeping the original vnavmesh route");
-                northHornAggroSuppressedUntil = now + NorthHornAggroSuppressionMS;
+                PauseNorthHornAggroRouteForRetry(
+                    waypoints,
+                    now,
+                    "No fully projected monster-avoidance route was available; movement paused while a safe route is rebuilt");
                 return;
             }
 
@@ -160,6 +172,7 @@ internal sealed partial class OccultPotFeature
                   .GetIpcSubscriber<List<Vector3>, bool, object?>("vnavmesh.Path.MoveTo")
                   .InvokeAction(submittedPath, false);
             northHornAggroRouteAdjusted = true;
+            northHornAggroRouteBlockedLogged = false;
             northHornAggroLastProgressPosition = localPlayer.Position;
             northHornAggroLastProgressAt = now;
             northHornAggroUnavailableLogged = false;
@@ -169,7 +182,7 @@ internal sealed partial class OccultPotFeature
         catch (Exception ex)
         {
             LogNorthHornAggroUnavailable(ex);
-            northHornAggroSuppressedUntil = now + 5_000;
+            northHornAggroNextUpdateAt = now + 5_000;
         }
     }
 
@@ -216,41 +229,89 @@ internal sealed partial class OccultPotFeature
         var projected = Plugin.PluginInterface
                               .GetIpcSubscriber<Vector3, float, float, Vector3?>(
                                   "vnavmesh.Query.Mesh.NearestPoint")
-                              .InvokeFunc(point, 4f, 8f);
-        return projected is { } result && DistanceSquaredXZ(result, point) <= 6.25f
+                              .InvokeFunc(point, 8f, 12f);
+        return projected is { } result && DistanceSquaredXZ(result, point) <= 64f
                    ? result
                    : null;
     }
 
-    private void RestoreNorthHornAggroFallback(Vector3 playerPosition, long now)
+    private void PauseNorthHornAggroRouteForRetry(
+        IReadOnlyList<Vector3>? retryPath,
+        long now,
+        string message)
     {
-        var fallback = PrepareNorthHornAggroFallback(northHornAggroFallbackPath, playerPosition);
         try
         {
-            if (fallback.Count != 0)
-            {
-                Plugin.PluginInterface
-                      .GetIpcSubscriber<List<Vector3>, bool, object?>("vnavmesh.Path.MoveTo")
-                      .InvokeAction(fallback, false);
-            }
-            else
-            {
-                VnavStop();
-                VnavMoveTo(northHornAggroDestination);
-            }
-
+            VnavStop();
+            northHornAggroBlockedPath = retryPath?.ToList() ?? [];
             northHornAggroRouteAdjusted = false;
             northHornAggroFallbackPath = null;
-            northHornAggroSuppressedUntil = now + NorthHornAggroSuppressionMS;
-            northHornAggroLastProgressPosition = playerPosition;
+            northHornAggroNextUpdateAt = now + NorthHornAggroReplanIntervalMS;
+            northHornAggroLastProgressPosition =
+                DService.Instance().ObjectTable.LocalPlayer?.Position ?? Vector3.Zero;
             northHornAggroLastProgressAt = now;
-            DService.Instance().Log.Warning(
-                "[KeitaToolbox.MagicPot] Monster-avoidance route stalled; restored the original vnavmesh route for this destination");
+            if (!northHornAggroRouteBlockedLogged)
+            {
+                northHornAggroRouteBlockedLogged = true;
+                DService.Instance().Log.Warning($"[KeitaToolbox.MagicPot] {message}");
+            }
         }
         catch (Exception ex)
         {
             northHornAggroLastProgressAt = now;
             LogNorthHornAggroUnavailable(ex);
+        }
+    }
+
+    private void RetryBlockedNorthHornAggroRoute(OmenBattleChara localPlayer, long now)
+    {
+        if (now < northHornAggroNextUpdateAt)
+            return;
+        northHornAggroNextUpdateAt = now + NorthHornAggroReplanIntervalMS;
+
+        try
+        {
+            var remainingPath = PrepareNorthHornAggroFallback(
+                northHornAggroBlockedPath,
+                localPlayer.Position);
+            if (remainingPath.Count == 0)
+                remainingPath.Add(northHornAggroDestination);
+
+            var sourcePath = new List<Vector3>(remainingPath.Count + 1) { localPlayer.Position };
+            sourcePath.AddRange(remainingPath);
+            var zones = CaptureNorthHornAggroZones(localPlayer);
+            List<Vector3> safePath;
+            if (zones.Count == 0)
+                safePath = sourcePath;
+            else if (!AggroAvoidancePolicy.TryBuild(
+                         sourcePath,
+                         zones,
+                         NorthHornAggroVerticalTolerance,
+                         ProjectNorthHornAggroWaypoint,
+                         out safePath))
+                return;
+
+            var submittedPath = RemoveCurrentPosition(safePath, localPlayer.Position);
+            if (submittedPath.Count == 0)
+                return;
+
+            northHornAggroFallbackPath = remainingPath;
+            northHornAggroBlockedPath = null;
+            Plugin.PluginInterface
+                  .GetIpcSubscriber<List<Vector3>, bool, object?>("vnavmesh.Path.MoveTo")
+                  .InvokeAction(submittedPath, false);
+            northHornAggroRouteAdjusted = zones.Count != 0;
+            northHornAggroRouteBlockedLogged = false;
+            northHornAggroUnavailableLogged = false;
+            northHornAggroLastProgressPosition = localPlayer.Position;
+            northHornAggroLastProgressAt = now;
+            DService.Instance().Log.Information(
+                $"[KeitaToolbox.MagicPot] North Horn treasure movement resumed with a safe route and {submittedPath.Count} waypoints");
+        }
+        catch (Exception ex)
+        {
+            LogNorthHornAggroUnavailable(ex);
+            northHornAggroNextUpdateAt = now + 5_000;
         }
     }
 
