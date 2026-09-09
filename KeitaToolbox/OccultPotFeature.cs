@@ -2785,9 +2785,10 @@ internal sealed partial class OccultPotFeature : IDisposable
         var localPlayer = DService.Instance().ObjectTable.LocalPlayer;
         if (localPlayer == null) return;
 
-        var insidePotFate = false;
+        var insidePotFate = IsParticipatingInPotFate();
         foreach (var fate in DService.Instance().Fate)
         {
+            if (insidePotFate) break;
             if (GetPot(fate.FateId) == null || fate.Radius <= 0f) continue;
 
             var offset = localPlayer.Position - fate.Position;
