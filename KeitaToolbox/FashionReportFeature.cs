@@ -89,7 +89,7 @@ internal sealed class FashionReportFeature : IDisposable
 
     public void DrawSettings()
     {
-        if (!ImGui.CollapsingHeader("时尚品鉴助手", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("时尚品鉴助手"))
             return;
 
         Plugin.DrawFeatureToggle(

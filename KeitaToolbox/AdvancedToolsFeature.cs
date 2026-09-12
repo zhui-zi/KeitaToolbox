@@ -208,7 +208,7 @@ internal sealed unsafe partial class AdvancedToolsFeature : IDisposable
 
     private void DrawMovementControlSettings()
     {
-        if (!ImGui.CollapsingHeader("移动控制", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("移动控制"))
             return;
 
         DrawToggle(
@@ -388,7 +388,7 @@ internal sealed unsafe partial class AdvancedToolsFeature : IDisposable
 
     private void DrawSurvivalSettings()
     {
-        if (!ImGui.CollapsingHeader("生存与紧急操作", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("生存与紧急操作"))
             return;
 
         DrawToggle(

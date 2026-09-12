@@ -73,7 +73,7 @@ internal sealed unsafe class VoidAetherFeature : IDisposable
 
     public void DrawCharacterAndInterfaceSettings()
     {
-        if (!ImGui.CollapsingHeader("装备与雇员服务", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("装备与雇员服务"))
             return;
 
         if (ImGui.Button("虚空修理工"))
@@ -93,7 +93,7 @@ internal sealed unsafe class VoidAetherFeature : IDisposable
 
     public void DrawPartyAndTradeSettings()
     {
-        if (!ImGui.CollapsingHeader("储物与商店服务", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("储物与商店服务"))
             return;
 
         if (ImGui.Button("部队储物柜"))
@@ -173,7 +173,7 @@ internal sealed unsafe class VoidAetherFeature : IDisposable
 
     private void DrawAetheryteUnlocks()
     {
-        if (!ImGui.CollapsingHeader("虚空水晶共鸣", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("虚空水晶共鸣"))
             return;
 
         if (aetherytes.Count == 0)
@@ -228,7 +228,7 @@ internal sealed unsafe class VoidAetherFeature : IDisposable
 
     private void DrawAetherCurrentUnlocks()
     {
-        if (!ImGui.CollapsingHeader("风脉解锁", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("风脉解锁"))
             return;
 
         if (aetherCurrents.Count == 0)
@@ -258,7 +258,7 @@ internal sealed unsafe class VoidAetherFeature : IDisposable
 
     private void DrawBattlefieldPoints()
     {
-        if (!ImGui.CollapsingHeader("PVP", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("PVP"))
             return;
 
         DrawBattlefieldTools(true);

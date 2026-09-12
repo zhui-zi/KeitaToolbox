@@ -48,7 +48,7 @@ internal sealed unsafe class PartyAliasFeature : IDisposable
 
     public void DrawSettings()
     {
-        if (!ImGui.CollapsingHeader("小队姓名伪装", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("小队姓名伪装"))
             return;
 
         var enabled = Settings.Enabled;

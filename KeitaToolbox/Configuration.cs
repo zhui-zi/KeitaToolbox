@@ -33,6 +33,7 @@ public sealed class Configuration : IPluginConfiguration
     public AeAssistStartupSettings AeAssistStartup { get; set; } = new();
     public VerificationMonitorSettings VerificationMonitor { get; set; } = new();
     public PartyAliasSettings PartyAlias { get; set; } = new();
+    public AdventurerPlateSettings AdventurerPlate { get; set; } = new();
 
     [NonSerialized]
     private IDalamudPluginInterface? pluginInterface;
@@ -70,6 +71,7 @@ public sealed class Configuration : IPluginConfiguration
         AeAssistStartup = Ensure(AeAssistStartup, ref changed);
         VerificationMonitor = Ensure(VerificationMonitor, ref changed);
         PartyAlias = Ensure(PartyAlias, ref changed);
+        AdventurerPlate = Ensure(AdventurerPlate, ref changed);
 
         AnonymousInstallId = EnsureString(AnonymousInstallId, ref changed);
         OccultPotAssistantConfig = EnsureString(OccultPotAssistantConfig, ref changed);
@@ -242,6 +244,15 @@ public sealed class FeatureSwitches
     public bool FashionReportAssistant { get; set; } = true;
     public bool AutoOutOnALimb { get; set; }
     public bool AutoTreasureOpen { get; set; }
+    public bool AdventurerPlate { get; set; } = true;
+}
+
+[Serializable]
+public sealed class AdventurerPlateSettings
+{
+    public bool AutoOpen { get; set; } = true;
+    public bool IgnoreOwnPlate { get; set; }
+    public bool Pinned { get; set; }
 }
 
 [Serializable]

@@ -119,6 +119,7 @@ public sealed partial class Plugin
                     DrawUnavailable("小队姓名伪装");
                 else
                     partyAliasFeature.DrawSettings();
+                adventurerPlateFeature?.DrawSettings();
                 if (mapGearsetFeature == null)
                     DrawUnavailable("按地图自动切换套装");
                 else
@@ -237,18 +238,18 @@ public sealed partial class Plugin
     }
     private static void DrawAboutPage()
     {
-        if (ImGui.CollapsingHeader("项目", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader("项目"))
             DrawProjectLink();
 
         ImGui.Spacing();
-        if (ImGui.CollapsingHeader("免责声明", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader("免责声明"))
         {
             DrawWrapped(
                 "本插件按“原样”提供，不作任何明示或默示保证。使用者自行承担使用第三方插件及相关功能的全部风险，作者及贡献者不对由此产生的任何索赔、损害或其他责任负责。");
         }
 
         ImGui.Spacing();
-        if (ImGui.CollapsingHeader("开源许可", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader("开源许可"))
         {
             DrawWrapped("KeitaToolbox 源代码采用 MIT License 开源，随附的第三方组件适用其各自的许可证。完整许可文本见项目仓库中的 LICENSE 文件。");
         }
@@ -305,9 +306,7 @@ public sealed partial class Plugin
 
     private static void DrawFloatingButtonSettings()
     {
-        if (!ImGui.CollapsingHeader(
-                "工具箱入口",
-                ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("工具箱入口"))
             return;
 
         DrawFeatureToggle(
@@ -319,7 +318,7 @@ public sealed partial class Plugin
 
     private void DrawBattlefieldFallbackSettings()
     {
-        if (!ImGui.CollapsingHeader("PVP", ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("PVP"))
             return;
 
         if (advancedToolsFeature == null)
@@ -337,9 +336,7 @@ public sealed partial class Plugin
             return true;
 
         CompleteUnlockRequest();
-        if (!ImGui.CollapsingHeader(
-                "高级功能解锁",
-                ImGuiTreeNodeFlags.DefaultOpen))
+        if (!ImGui.CollapsingHeader("高级功能解锁"))
             return false;
 
         DrawWrapped(

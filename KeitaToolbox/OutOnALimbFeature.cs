@@ -63,7 +63,7 @@ internal sealed unsafe class OutOnALimbFeature : IDisposable
     {
         if (!ImGui.CollapsingHeader(
                 "自动游玩孤树无援",
-                ImGuiTreeNodeFlags.DefaultOpen))
+                ImGuiTreeNodeFlags.None))
         {
             return;
         }

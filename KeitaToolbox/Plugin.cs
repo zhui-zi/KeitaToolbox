@@ -49,6 +49,7 @@ public sealed partial class Plugin : IDalamudPlugin
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static INamePlateGui NamePlateGui { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    [PluginService] internal static IUnlockState UnlockState { get; private set; } = null!;
 
     internal static Configuration Config { get; private set; } = null!;
     internal static DeferredScheduler Scheduler { get; } = new(
@@ -71,6 +72,7 @@ public sealed partial class Plugin : IDalamudPlugin
     private FashionReportFeature? fashionReportFeature;
     private OutOnALimbFeature? outOnALimbFeature;
     private PartyAliasFeature? partyAliasFeature;
+    private AdventurerPlateFeature? adventurerPlateFeature;
     private bool omenServicesInitialized;
     private bool runtimeInitialized;
     private readonly HttpClient unlockClient = new()
@@ -174,6 +176,9 @@ public sealed partial class Plugin : IDalamudPlugin
         partyAliasFeature = CreateFeature(
             "party name aliases",
             () => new PartyAliasFeature());
+        adventurerPlateFeature = CreateFeature(
+            "adventurer plate inspector",
+            () => new AdventurerPlateFeature());
 
         Framework.Update += OnFrameworkUpdate;
         PluginInterface.UiBuilder.Draw += DrawFloatingButton;
@@ -198,6 +203,7 @@ public sealed partial class Plugin : IDalamudPlugin
         DisposeFeature(outOnALimbFeature, "Out on a Limb automation");
         DisposeFeature(fashionReportFeature, "Fashion Report assistant");
         DisposeFeature(partyAliasFeature, "party name aliases");
+        DisposeFeature(adventurerPlateFeature, "adventurer plate inspector");
         DisposeFeature(aeAssistStartupFeature, "AEAssist startup automation");
         DisposeFeature(voidAetherFeature, "void aether tools");
         DisposeFeature(occultPotFeature, "Magic Pot Assistant");
@@ -247,6 +253,7 @@ public sealed partial class Plugin : IDalamudPlugin
             advancedToolsFeature?.UpdateMouseTeleport();
             advancedToolsFeature?.UpdatePartyBuffs();
             verificationMonitorFeature?.Update();
+            adventurerPlateFeature?.Update();
             CompleteUsageRequest();
         }
         catch (Exception ex)
@@ -312,6 +319,9 @@ public sealed partial class Plugin : IDalamudPlugin
             windowOpen = true;
             return;
         }
+
+        if (adventurerPlateFeature?.HandleCommand(trimmed) == true)
+            return;
 
         if (voidAetherFeature?.HandleCommand(trimmed) == true)
             return;
