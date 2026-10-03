@@ -2304,7 +2304,7 @@ internal sealed partial class OccultPotFeature : IDisposable
         var agentModule = AgentModule.Instance();
         var agentInterface = agentModule == null ? null : agentModule->GetAgentByInternalId(AgentId.Revive);
         var reviveAgent = agentInterface == null ? null : (AgentRevive*)agentInterface;
-        var reviveState = reviveAgent == null ? (byte)0 : reviveAgent->ReviveState;
+        var reviveState = reviveAgent == null ? (byte)0 : reviveAgent->State;
         var resurrectionTimeLeft = reviveAgent == null ? 0 : reviveAgent->ResurrectionTimeLeft;
         var resurrectingPlayerID = reviveAgent == null ? 0 : reviveAgent->ResurrectingPlayerId;
         var localPlayer = DService.Instance().ObjectTable.LocalPlayer;

@@ -529,10 +529,25 @@ internal sealed class VerificationMonitorFeature : IDisposable
                 "DailyRoutines.Common.Runtime.Hosts.ManagerHost",
                 false))
             .FirstOrDefault(type => type != null);
-        var host = hostType?.GetProperty(
-                "Current",
-                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?.GetValue(null);
+        object? host;
+        try
+        {
+            // DailyRoutines exposes the host before it registers the manager
+            // provider. Its Current getter throws during that startup window;
+            // treat that state as unavailable and let the auth fallback run.
+            host = hostType?.GetProperty(
+                    "Current",
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                ?.GetValue(null);
+        }
+        catch (TargetInvocationException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
         if (host == null)
             return null;
 
