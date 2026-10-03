@@ -472,7 +472,13 @@ internal sealed unsafe class PortraitGearSyncFeature : IDisposable
         }
 
         if (changedGearsets.Count > 0)
+        {
+            // Persist glamour edits for every shared gearset immediately. The
+            // in-memory item flags alone are not enough for non-active jobs.
+            foreach (var gearsetId in changedGearsets)
+                module->UpdateGearset(gearsetId);
             module->UserFileEvent.HasChanges = true;
+        }
         return [.. changedGearsets];
     }
 
@@ -537,6 +543,9 @@ internal sealed unsafe class PortraitGearSyncFeature : IDisposable
         banner->LastUpdated = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         banner->Checksum = gearData.Checksum;
         helper->BannerModuleEntry_ApplyRaceGenderHeightTribe(banner, localPlayer);
+        // Keep the gearset file dirty as well as the banner file so edits for
+        // inactive jobs are written during the next user-file save.
+        module->UserFileEvent.HasChanges = true;
         bannerModule->UserFileEvent.HasChanges = true;
         return true;
     }

@@ -52,7 +52,9 @@ internal sealed partial class OccultPotFeature
         northHornAggroDestination = destination;
         northHornAggroLastProgressPosition =
             DService.Instance().ObjectTable.LocalPlayer?.Position ?? destination;
-        northHornAggroNextUpdateAt = Environment.TickCount64 + NorthHornAggroReplanIntervalMS;
+        // Inspect the freshly submitted route on the next update tick. Delaying the
+        // first scan leaves a mounted player enough time to enter a mob's sight range.
+        northHornAggroNextUpdateAt = Environment.TickCount64;
         northHornAggroLastProgressAt = Environment.TickCount64;
         northHornAggroFallbackPath = null;
         northHornAggroBlockedPath = null;

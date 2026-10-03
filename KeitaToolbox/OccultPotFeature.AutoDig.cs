@@ -532,7 +532,8 @@ internal sealed partial class OccultPotFeature
         EnqueueMoveTo(
             RandomOffset(target.World, standbyRadius),
             MagicPotStandbyPolicy.ArrivalTolerance,
-            timeoutMs: target.TerritoryID == OccultNorthTerritory ? 240000 : 90000);
+            timeoutMs: target.TerritoryID == OccultNorthTerritory ? 240000 : 90000,
+            avoidNorthHornAggro: target.TerritoryID == OccultNorthTerritory);
         autoDigTask.Enqueue(() => { autoDigStatus = "等待刷新"; return target.Alive; });
         autoDigTask.Enqueue(() => { Dismount(); ClearCurrentTarget(); return true; });
         autoDigTask.DelayNext(1000);
