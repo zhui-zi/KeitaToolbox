@@ -642,7 +642,8 @@ internal sealed class VerificationMonitorFeature : IDisposable
         var verifier = FindInObjectGraph(
             pluginInstance,
             value => value.GetType().GetInterfaces().Any(
-                type => type.FullName == "OmniToolbox.PublicBridge.IPrivateVerifier"),
+                type => type.FullName is "OmniToolbox.Verification.IPrivateVerifier" or
+                    "OmniToolbox.PublicBridge.IPrivateVerifier"),
             "OmniToolbox");
         if (verifier == null)
             return null;
@@ -897,12 +898,14 @@ internal sealed class VerificationMonitorFeature : IDisposable
 
     private static object? GetPluginInstance(object exposedPlugin, Assembly targetAssembly)
     {
+        var localPluginType = exposedPlugin.GetType().Assembly.GetType(
+            "Dalamud.Plugin.Internal.Types.LocalPlugin");
+        if (localPluginType is null)
+            return null;
+
         var localPlugin = GetAllFields(exposedPlugin.GetType())
             .Select(field => TryGetValue(field, exposedPlugin))
-            .FirstOrDefault(value =>
-                value?.GetType().FullName?.StartsWith(
-                    "Dalamud.Plugin.Internal.Types.LocalPlugin",
-                    StringComparison.Ordinal) == true);
+            .FirstOrDefault(value => value is not null && localPluginType.IsInstanceOfType(value));
         if (localPlugin == null)
             return null;
 
