@@ -71,6 +71,7 @@ public sealed partial class Plugin : IDalamudPlugin
     private VerificationMonitorFeature? verificationMonitorFeature;
     private FashionReportFeature? fashionReportFeature;
     private OutOnALimbFeature? outOnALimbFeature;
+    private KeyboundBrawlerFeature? keyboundBrawlerFeature;
     private PartyAliasFeature? partyAliasFeature;
     private AdventurerPlateFeature? adventurerPlateFeature;
     private bool omenServicesInitialized;
@@ -164,6 +165,9 @@ public sealed partial class Plugin : IDalamudPlugin
                 "Out on a Limb automation",
                 () => new OutOnALimbFeature());
         }
+        keyboundBrawlerFeature = CreateFeature(
+            "Keybound Brawler automation",
+            () => new KeyboundBrawlerFeature());
         aeAssistStartupFeature = CreateFeature(
             "AEAssist startup automation",
             () => new AeAssistStartupFeature());
@@ -201,6 +205,7 @@ public sealed partial class Plugin : IDalamudPlugin
 
         DisposeFeature(verificationMonitorFeature, "plugin verification monitor");
         DisposeFeature(outOnALimbFeature, "Out on a Limb automation");
+        DisposeFeature(keyboundBrawlerFeature, "Keybound Brawler automation");
         DisposeFeature(fashionReportFeature, "Fashion Report assistant");
         DisposeFeature(partyAliasFeature, "party name aliases");
         DisposeFeature(adventurerPlateFeature, "adventurer plate inspector");
@@ -252,6 +257,7 @@ public sealed partial class Plugin : IDalamudPlugin
             Scheduler.Update();
             advancedToolsFeature?.UpdateMouseTeleport();
             advancedToolsFeature?.UpdatePartyBuffs();
+            keyboundBrawlerFeature?.Update();
             verificationMonitorFeature?.Update();
             adventurerPlateFeature?.Update();
             CompleteUsageRequest();

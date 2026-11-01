@@ -243,6 +243,7 @@ public sealed class FeatureSwitches
     public bool OccultPotAutoRevive { get; set; }
     public bool FashionReportAssistant { get; set; } = true;
     public bool AutoOutOnALimb { get; set; }
+    public bool AutoKeyboundBrawler { get; set; }
     public bool AutoTreasureOpen { get; set; }
     public bool AdventurerPlate { get; set; } = true;
 }

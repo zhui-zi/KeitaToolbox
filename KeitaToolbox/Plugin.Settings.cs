@@ -170,6 +170,7 @@ public sealed partial class Plugin
                     DrawUnavailable("自动游玩孤树无援");
                 else
                     outOnALimbFeature.DrawSettings();
+                keyboundBrawlerFeature?.DrawSettings();
                 if (fashionReportFeature == null)
                     DrawUnavailable("时尚品鉴助手");
                 else
