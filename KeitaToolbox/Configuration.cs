@@ -244,6 +244,7 @@ public sealed class FeatureSwitches
     public bool FashionReportAssistant { get; set; } = true;
     public bool AutoOutOnALimb { get; set; }
     public bool AutoKeyboundBrawler { get; set; }
+    public bool AutoStartKeyboundBrawler { get; set; }
     public bool AutoTreasureOpen { get; set; }
     public bool AdventurerPlate { get; set; } = true;
 }

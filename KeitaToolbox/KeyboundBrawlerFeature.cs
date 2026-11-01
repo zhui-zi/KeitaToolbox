@@ -1,7 +1,10 @@
 using System;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using OmenTools.Info.Game.Packets.Upstream;
+using OmenTools.OmenService;
 
 namespace KeitaToolbox;
 
@@ -28,15 +31,26 @@ internal sealed unsafe class KeyboundBrawlerFeature : IDisposable
             lastSubmittedWord = string.Empty;
         }
 
-        Plugin.DrawHelp("读取副本界面中的词条，并通过游戏内输入组件自动完成提交。进入魔光键影后生效。");
+        var autoStart = Plugin.Config.Features.AutoStartKeyboundBrawler;
+        if (ImGui.Checkbox("自动开始魔光键影", ref autoStart))
+        {
+            Plugin.Config.Features.AutoStartKeyboundBrawler = autoStart;
+            Plugin.Config.Save();
+        }
+
+        Plugin.DrawHelp("自动开始会在魔光键影区域自动报名并进入副本；自动游玩会读取词条并提交输入。两项可分别启用。");
         ImGui.TextDisabled(Plugin.Config.Features.AutoKeyboundBrawler ? "状态：已启用" : "状态：未启用");
     }
 
     public void Update()
     {
-        if (!Plugin.Config.Features.AutoKeyboundBrawler ||
-            Plugin.ClientState.TerritoryType != KeyboundBrawlerTerritory ||
-            Environment.TickCount64 < nextSubmitAt)
+        if (Plugin.ClientState.TerritoryType != KeyboundBrawlerTerritory)
+            return;
+
+        if (Plugin.Config.Features.AutoStartKeyboundBrawler)
+            TryRegister();
+
+        if (!Plugin.Config.Features.AutoKeyboundBrawler || Environment.TickCount64 < nextSubmitAt)
             return;
 
         var wordAddon = GetAddon("KTGEWord");
@@ -66,11 +80,39 @@ internal sealed unsafe class KeyboundBrawlerFeature : IDisposable
         nextSubmitAt = Environment.TickCount64 + 180;
     }
 
+    private void TryRegister()
+    {
+        if (Environment.TickCount64 < _nextRegistrationAt ||
+            !Plugin.ClientState.IsLoggedIn ||
+            Plugin.Condition[ConditionFlag.BetweenAreas] ||
+            Plugin.Condition[ConditionFlag.BetweenAreas51] ||
+            Plugin.Condition[ConditionFlag.OccupiedInEvent] ||
+            Plugin.Condition[ConditionFlag.InDutyQueue] ||
+            Plugin.Condition[ConditionFlag.WaitingForDutyFinder] ||
+            Plugin.Condition[ConditionFlag.WaitingForDuty])
+            return;
+
+        var dialogue = GetAddon("KTGEnterDialogue");
+        if (dialogue != null && dialogue->IsReady)
+        {
+            dialogue->FireCallbackInt(0);
+            _nextRegistrationAt = Environment.TickCount64 + 3000;
+            return;
+        }
+
+        new EventStartPackt(LocalPlayerState.EntityID, KeyboundBrawlerEventId).Send();
+        _nextRegistrationAt = Environment.TickCount64 + 3000;
+    }
+
+    private long _nextRegistrationAt;
+
     private static AtkUnitBase* GetAddon(string name)
     {
         var addon = RaptureAtkUnitManager.Instance()->GetAddonByName(name);
         return addon == null || !addon->IsVisible ? null : addon;
     }
+
+    private const uint KeyboundBrawlerEventId = 721882;
 
     private static string FindNextWord(AtkUnitBase* addon)
     {
