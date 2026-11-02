@@ -7,7 +7,7 @@ namespace KeitaToolbox;
 
 public sealed partial class Plugin
 {
-    private const string ProjectUrl = "https://github.com/zhui-zi/DalamudPlugins";
+    private const string ProjectUrl = "https://github.com/zhui-zi/KeitaToolbox";
 
     private enum SettingsPage
     {
