@@ -3,6 +3,8 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using OmenTools;
+using OmenTools.Extensions;
 using OmenTools.Info.Game.Packets.Upstream;
 using OmenTools.OmenService;
 
@@ -48,7 +50,10 @@ internal sealed unsafe class KeyboundBrawlerFeature : IDisposable
             return;
 
         if (Plugin.Config.Features.AutoStartKeyboundBrawler)
+        {
+            TryCommence();
             TryRegister();
+        }
 
         if (!Plugin.Config.Features.AutoKeyboundBrawler || Environment.TickCount64 < nextSubmitAt)
             return;
@@ -62,7 +67,13 @@ internal sealed unsafe class KeyboundBrawlerFeature : IDisposable
         }
 
         var word = FindNextWord(wordAddon);
-        if (string.IsNullOrWhiteSpace(word) || string.Equals(word, lastSubmittedWord, StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(word))
+        {
+            lastSubmittedWord = string.Empty;
+            return;
+        }
+
+        if (string.Equals(word, lastSubmittedWord, StringComparison.Ordinal))
             return;
 
         var node = inputAddon->GetNodeById(7);
@@ -75,7 +86,15 @@ internal sealed unsafe class KeyboundBrawlerFeature : IDisposable
 
         var input = (AtkComponentTextInput*)componentNode->Component;
         input->SetText(word);
-        inputAddon->FireCallbackInt(0);
+        if (input->Callback == null)
+            return;
+
+        input->Callback(
+            inputAddon,
+            InputCallbackType.Enter,
+            input->RawString.StringPtr,
+            input->EvaluatedString.StringPtr,
+            input->CallbackEventKind);
         lastSubmittedWord = word;
         nextSubmitAt = Environment.TickCount64 + 180;
     }
@@ -102,6 +121,17 @@ internal sealed unsafe class KeyboundBrawlerFeature : IDisposable
 
         new EventStartPackt(LocalPlayerState.EntityID, KeyboundBrawlerEventId).Send();
         _nextRegistrationAt = Environment.TickCount64 + 3000;
+    }
+
+    private static void TryCommence()
+    {
+        var addon = GetAddon("ContentsFinderConfirm");
+        if (addon == null)
+            return;
+
+        var confirm = (AddonContentsFinderConfirm*)addon;
+        if (confirm->CommenceButton != null && confirm->CommenceButton->IsEnabled)
+            confirm->CommenceButton->Click();
     }
 
     private long _nextRegistrationAt;
